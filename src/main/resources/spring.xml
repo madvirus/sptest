@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <tx:annotation-driven/>
+
+    <mvc:annotation-driven/>
+    <mvc:default-servlet-handler/>
+    <mvc:view-resolvers>
+        <mvc:jsp prefix="/WEB-INF/view/" suffix=".jsp"/>
+    </mvc:view-resolvers>
+
+    <mvc:view-controller path="/main" view-name="main" />
+
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>message.error</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl"
+                  value="jdbc:mysql://localhost/sample?characterEncoding=utf8"/>
+        <property name="user" value="spring4"/>
+        <property name="password" value="spring4"/>
+    </bean>
+
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="memberDao" class="sptest.domain.dao.JdbcMemberDao">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean id="memberRegisterService" class="sptest.domain.service.MemberRegisterServiceImpl">
+        <property name="memberDao" ref="memberDao"/>
+    </bean>
+
+    <bean class="sptest.web.MemberRegisterController">
+        <property name="memberRegisterService" ref="memberRegisterService"/>
+    </bean>
+
+    <bean id="authService" class="sptest.domain.service.AuthServiceImpl">
+        <property name="memberDao" ref="memberDao" />
+    </bean>
+
+    <bean class="sptest.web.LoginController">
+        <property name="authService" ref="authService" />
+    </bean>
+</beans>
